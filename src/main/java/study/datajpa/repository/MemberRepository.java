@@ -42,7 +42,7 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
     @Query("update Member m set m.age =m.age + 1 where m.age >= :age")
     int bulkAgePlus(@Param("age") int age);
 
-    List<Member> findByUsername(String username);
+    List<Member> findByUsername(@Param("username") String username);
 
     @Query("select m from Member m left join fetch m.team")
     List<Member> findMemberFetchJoin();
@@ -63,4 +63,14 @@ public interface MemberRepository extends JpaRepository<Member, Long>, MemberRep
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     List<Member> findLockByUsername(String username);
+
+    <T> List<T> findProjectionsByUsername(@Param("username") String username, Class<T> type);
+
+    @Query(value = "select * from Member where username = ?", nativeQuery = true)
+    Member findByNativeQuery(String username);
+
+    @Query(value = "select m.member_id as id, m.username, t.name as teamName " +
+            "from member m left join team t",
+            countQuery = "select count(*) from member", nativeQuery = true)
+    Page<MemberProjection> findByNativeProjection(Pageable pageable);
 }
